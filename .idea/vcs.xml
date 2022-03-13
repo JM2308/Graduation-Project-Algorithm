@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Detection Algorithm/4. 홍채 인식/GazeTracking" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Detection Algorithm/DRONE_EYE-Image-Warpping" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Detection Algorithm/Four-Point-Invoice-Transform-with-OpenCV" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Detection Algorithm/GazeTracking" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/GazeTracking" vcs="Git" />
+  </component>
+</project>
