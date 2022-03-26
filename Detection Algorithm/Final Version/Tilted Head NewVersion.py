@@ -29,6 +29,8 @@ def queueUpdate(angle):
 
 
 def headCheck(X1, Y1, X2, Y2):
+    global angle
+
     theta = np.arctan((X2 - X1) / (Y2 - Y1))
     angle = theta * 180 / math.pi
     angle = abs(angle)
@@ -39,16 +41,22 @@ def headCheck(X1, Y1, X2, Y2):
 
     global preMovingAverage
 
-    if movingQueue.qsize() < 10:
-        if movingQueue.qsize() == 0:
-            preMovingAverage = newMovingAverage
-        if newMovingAverage >= threshold:
+    if movingQueue.qsize() == 0:
+        preMovingAverage = newMovingAverage
+
+    if angle >= threshold:
+        # 계산한 각도가 threshold 보다 클 때
+        print("Tilted Head")
+
+    if newMovingAverage >= threshold:
+        # average 가  threshold 보다 클 때
+        if preMovingAverage - (threshold / 10) <= newMovingAverage:
+            # 급격하게 고개 각도가 줄어들 때 (고개갸웃 -> 원래대로 돌아올때)를 확인
             print("Tilted Head")
-    elif movingQueue.qsize() == 10:
+
+    if movingQueue.qsize() == 10:
         if preMovingAverage + (threshold / 10) <= newMovingAverage:
-            print("pre = ", preMovingAverage, " / new = ", newMovingAverage)
-            print("Tilted Head")
-        elif newMovingAverage >= threshold:
+            # 급격하게 고개 각도가 커질 때 (기존 -> 고개 갸웃거릴 때)를 확인
             print("Tilted Head")
 
     preMovingAverage = newMovingAverage
@@ -77,7 +85,7 @@ index = UsingLandmark
 
 movingQueue = queue.Queue()
 preMovingAverage = 0
-threshold = 20
+threshold = 25
 
 while True:
     ret, img_frame = cap.read()

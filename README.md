@@ -51,11 +51,17 @@
 </table>
 
 <h3> 2-2. Tilted Head (New) : 고개를 갸웃거리는지 확인 </h3>
- New Version
- - 과정 01 : dlib의 눈 사이 중점 (27번)과 코 (30번)의 랜드마크 추출
- - 과정 02 : 추출한 랜드마크를 토대로 탄젠트 삼각비 함수인 arctan를 이용하여 각도 계산
- - 과정 03 : 가장 최근 10개 frame의 계산 결과를 평균내어 조건 확인
-
+ New Version <br>
+ - 과정 01 : dlib의 눈 사이 중점 (27번)과 코 (30번)의 랜드마크 추출 <br>
+ - 과정 02 : 추출한 랜드마크를 토대로 탄젠트 삼각비 함수인 arctan를 이용하여 각도 계산 <br>
+ - 과정 03 : 가장 최근 10개 frame의 계산 결과를 평균내어 조건 확인 <br>
+ - 조건 01 : angle ≥ threshold <br>
+ - 조건 02-1 : newMovingAverage ≥ threshold <br>
+ - 조건 02-2 : 각도가 급격하게 낮아지는 경우 (고개 갸웃 → 원래대로)를 예외 조건으로 추가 <br>
+              ( → preMovingAverage - (threshold / 10) ≤ newMovingAverage ) <br>
+ - 조건 03-1 : QueueSize = 10 <br>
+ - 조건 03-2 : 각도가 급격하게 커지는 경우 (기존 → 고개 갸웃)을 예외 조건으로 추가 <br>
+              ( → preMovingAverage + (threshold / 10) ≤ newMovingAverage ) <br>
  
 
 <h3> 3. Frown Grabella : 미간을 찌푸리고 있는지 확인 </h3>
