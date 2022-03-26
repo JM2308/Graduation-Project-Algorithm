@@ -5,14 +5,14 @@
  - 과정 02 : 얼굴 인식이 될 경우 학생이 자리에 앉아있는 것으로 판단하여 다음 알고리즘으로 넘어간다. <br>
  - 과정 03 : 얼굴 인식이 안될 경우 학생이 자리에 앉아있지 않은 것으로 판단 <br>
 
-<h3> 2. Tilted Head : 고개를 갸웃거리는지 확인 </h3>
+<h3> 2-1. Tilted Head (Old) : 고개를 갸웃거리는지 확인 </h3>
  - 과정 01 : Mediapipe Pose과 MobileNet 방식을 결합 <br>
  - 과정 02 : Mediapiep Pose의 경우 코와 입 중점, 어깨 왼쪽과 오른쪽을 이은 두 직선의 사이각을 계산하여 일정 각도 이하로 나타나면 고개를 갸웃거리는 것으로 판단 <br>
  - 과정 03 : MobileNet의 경우, 얼굴의 XYZ축 각도를 계산하여 특정 조건을 만족할 경우 고개를 갸웃거리는 것으로 판단 <br>
  - 과정 04 : Mediapipe Pose 방식을 이용하기 위해서는 Shoulder Landmark가 필요 <br>
  - 과정 05 : 만약 Shoulder Landmark가 인식될 경우, Mediapipe Pose 방식을 이용해 알고리즘 결과 측정 <br>
  - 과정 06 : 만약 Shoulder Landmark가 인식되지 않을 경우, Mediapipe Pose 방식을 이용해 알고리즘 결과 측정 <br>
-   
+
 <table>
     <tr>
         <td> Shoulder Landmark Check Result </td>
@@ -49,6 +49,14 @@
         <td> X </td>
     </tr>
 </table>
+
+<h3> 2-2. Tilted Head (New) : 고개를 갸웃거리는지 확인 </h3>
+ New Version
+ - 과정 01 : dlib의 눈 사이 중점 (27번)과 코 (30번)의 랜드마크 추출
+ - 과정 02 : 추출한 랜드마크를 토대로 탄젠트 삼각비 함수인 arctan를 이용하여 각도 계산
+ - 과정 03 : 가장 최근 10개 frame의 계산 결과를 평균내어 조건 확인
+
+ 
 
 <h3> 3. Frown Grabella : 미간을 찌푸리고 있는지 확인 </h3>
  - 방식 :  <br>

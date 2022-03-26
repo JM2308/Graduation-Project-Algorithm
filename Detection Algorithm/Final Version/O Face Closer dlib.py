@@ -123,4 +123,3 @@ while True:
         
 
 cap.release()
-
