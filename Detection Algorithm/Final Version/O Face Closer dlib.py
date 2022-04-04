@@ -70,7 +70,7 @@ MOUTH_OUTLINE = list(range(48, 61))
 MOUTH_INNER = list(range(61, 68))
 JAWLINE = list(range(0, 17))
 
-EYE = list(range(36, 42)) + list(range(42, 48))
+EYE = list(range(36, 37)) + list(range(45, 46))
 
 index = EYE
 
