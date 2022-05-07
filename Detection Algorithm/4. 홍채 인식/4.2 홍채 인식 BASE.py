@@ -4,6 +4,7 @@ from gaze_tracking import GazeTracking
 gaze = GazeTracking()
 webcam = cv2.VideoCapture(0)
 # webcam = cv2.VideoCapture("../Test Image/sample2.mp4")
+eyeFlag = 0
 
 
 while True:
@@ -13,12 +14,17 @@ while True:
     new_frame = gaze.annotated_frame()
     text = ""
 
-    if gaze.is_right():
-        text = "Looking right"
+    global eyeFlag
+
+    if gaze.is_center():
+        text = "Looking center"
+        eyeFlag = 0
     elif gaze.is_left():
         text = "Looking left"
-    elif gaze.is_center():
-        text = "Looking center"
+        eyeFlag = -1
+    elif gaze.is_right():
+        text = "Looking right"
+        eyeFlag = 1
 
     cv2.putText(new_frame, text, (60, 60), cv2.FONT_HERSHEY_DUPLEX, 2, (255, 0, 0), 2)
     cv2.imshow("Demo", new_frame)

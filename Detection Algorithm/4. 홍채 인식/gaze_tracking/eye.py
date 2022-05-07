@@ -22,6 +22,7 @@ class Eye(object):
 
         self._analyze(original_frame, landmarks, side, calibration)
 
+
     @staticmethod
     def _middle_point(p1, p2):  # Parameter로 입력받은 두 좌표의 middle_point를 계산
         """Returns the middle point (x,y) between two points
@@ -84,7 +85,9 @@ class Eye(object):
         bottom = self._middle_point(landmarks.part(points[5]), landmarks.part(points[4]))
 
         eye_width = math.hypot((left[0] - right[0]), (left[1] - right[1]))
+        print("width = ", eye_width)
         eye_height = math.hypot((top[0] - bottom[0]), (top[1] - bottom[1]))
+        print("height = ", eye_height)
 
         try:
             ratio = eye_width / eye_height
@@ -118,3 +121,21 @@ class Eye(object):
 
         threshold = calibration.threshold(side)
         self.pupil = Pupil(self.frame, threshold)
+
+    def findROI(self, landmarks, points):
+        left = (landmarks.part(points[0]).x, landmarks.part(points[0]).y)
+        right = (landmarks.part(points[3]).x, landmarks.part(points[3]).y)
+        top = self._middle_point(landmarks.part(points[1]), landmarks.part(points[2]))
+        bottom = self._middle_point(landmarks.part(points[5]), landmarks.part(points[4]))
+
+        eye_width = math.hypot((left[0] - right[0]), (left[1] - right[1]))
+        eye_height = math.hypot((top[0] - bottom[0]), (top[1] - bottom[1]))
+
+        try:
+            ratio = eye_width / eye_height
+        except ZeroDivisionError:
+            ratio = None
+
+        return ratio
+
+
