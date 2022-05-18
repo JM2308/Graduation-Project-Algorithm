@@ -9,7 +9,7 @@ import time
 import math
 
 gaze = GazeTracking()
-webcam = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)
 
 start = time.time()
 gazeResult = [0, 0, 0, 0]
@@ -17,7 +17,7 @@ preSec = 0
 
 while True:
     # We get a new frame from the webcam
-    _, frame = webcam.read()
+    _, frame = cap.read()
 
     # We send this frame to GazeTracking to analyze it
     gaze.refresh(frame)
@@ -85,5 +85,5 @@ while True:
     if cv2.waitKey(1) == 27:
         break
    
-webcam.release()
+cap.release()
 cv2.destroyAllWindows()
