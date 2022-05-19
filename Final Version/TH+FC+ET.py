@@ -5,6 +5,10 @@ import queue
 from gaze_tracking import GazeTracking
 import time
 import math
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import db
+from datetime import datetime
 
 
 def queueUpdate(queueName, angle):
@@ -43,6 +47,8 @@ def headCheck(X1, Y1, X2, Y2):
     angle = theta * 180 / math.pi
     angle = abs(angle)
 
+    result = '0'
+
     newMovingAverage = queueUpdate(TH_movingQueue, angle)
 
     global TH_preMovingAverage
@@ -53,21 +59,24 @@ def headCheck(X1, Y1, X2, Y2):
     if angle >= TH_threshold:
         # 계산한 각도가 threshold 보다 클 때
         print("Tilted Head")
+        result = '1'
 
     if newMovingAverage >= TH_threshold:
         # average 가  threshold 보다 클 때
         if TH_preMovingAverage - (TH_threshold / 10) <= newMovingAverage:
             # 급격하게 고개 각도가 줄어들 때 (고개갸웃 -> 원래대로 돌아올때)를 확인
             print("Tilted Head")
+            result = '1'
 
     if TH_movingQueue.qsize() == 10:
         if TH_preMovingAverage + (TH_threshold / 10) <= newMovingAverage:
             # 급격하게 고개 각도가 커질 때 (기존 -> 고개 갸웃거릴 때)를 확인
             print("Tilted Head")
+            result = '1'
 
     TH_preMovingAverage = newMovingAverage
 
-    return True
+    return result
 
 
 def calculateLength(LEyeEdgeX, LEyeEdgeY, REyeEdgeX, REyeEdgeY):
@@ -80,6 +89,8 @@ def faceCloserCheck(list_points):
     LEyeEdgeY = list_points[36][1]
     REyeEdgeX = list_points[45][0]
     REyeEdgeY = list_points[45][1]
+
+    result = '0'
 
     faceLength = calculateLength(LEyeEdgeX, LEyeEdgeY, REyeEdgeX, REyeEdgeY)
     # print("faceLength = ", faceLength)
@@ -94,13 +105,16 @@ def faceCloserCheck(list_points):
         FC_preMovingAverage = newMovingAverage
     elif FC_preMovingAverage + FC_threshold <= newMovingAverage:
         print("Face Closer")
+        result = '1'
 
-    return True
+    return result
 
 
 def eyetrackingCheck(img_frame):
     global gazeResult
     global preSec
+
+    result = 0
 
     # 3초 간격으로 저장 (3초가 한순간에 딱 측정되는 것이 X! 그 순간 1초 동안 계속 측정)
     # So, 1초 동안 가장 많이 측정된 경우를 파악하고 이 데이터를 저장!
@@ -157,6 +171,14 @@ def eyetrackingCheck(img_frame):
     # cv.putText(img_frame, "Left pupil:  " + str(left_pupil), (90, 130), cv.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
     # cv.putText(img_frame, "Right pupil: " + str(right_pupil), (90, 165), cv.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
 
+    return nowSec, result
+
+
+# firebase
+cred = credentials.Certificate('Setting/uume-json.json')
+firebase_admin.initialize_app(cred, {
+    'databaseURL':'https://uume-58fe8-default-rtdb.firebaseio.com/'
+})
 
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor('Setting File/shape_predictor_68_face_landmarks.dat')
@@ -192,6 +214,45 @@ FC_preMovingAverage = 0
 TH_threshold = 25
 FC_threshold = 20
 
+# database 정보 입력
+# room_name seojin915-scienceA 이런식으로 입력 A는 시간임
+#           선생님id-과목+시간
+room_name = input(str('Enter room name: '))
+user_id = input(str('Enter user id: '))
+teacher_id = room_name.split('-')[0]
+class_name = room_name.split('-')[1]
+
+y = str(datetime.today().year)
+m = str(datetime.today().month)
+d = str(datetime.today().day)
+date = y+m+d
+ref = 'class_v2/'+teacher_id+'/'+date+'/'+class_name+'/'+user_id
+dir = db.reference(ref)
+
+student_data = dir.get()
+print(student_data)
+
+global in_seat_array
+global tilted_array
+global face_closer_array
+global sec_array
+global gaze_array
+
+if student_data is None:
+    in_seat_array = '0'
+    tilted_array = '0'
+    face_closer_array = '0'
+    sec_array = '0'
+    gaze_array = '0'
+else:
+    in_seat_array = str(student_data['in_seat'])
+    tilted_array = str(student_data['tilted'])
+    face_closer_array = str(student_data['face_closer'])
+    sec_array = str(student_data['sec'])
+    gaze_array = str(student_data['gaze'])
+
+print(in_seat_array, type(in_seat_array))
+
 while True:
     ret, img_frame = cap.read()
     img_gray = cv.cvtColor(img_frame, cv.COLOR_BGR2GRAY)
@@ -204,8 +265,13 @@ while True:
     text = ""
 
     eyetrackingCheck(img_frame)
+    sec_result, gaze_result = eyetrackingCheck(img_frame)
+    sec_array += str(sec_result)
+    gaze_array += str(gaze_result)
 
+    in_seat_check = False
     for face in dets:
+        in_seat_check = True
         shape = predictor(img_frame, face)
         list_points = []
 
@@ -223,8 +289,10 @@ while True:
 
         cv.rectangle(img_frame, (face.left(), face.top()), (face.right(), face.bottom()), (0, 0, 255), 3)
 
-        headCheck(list_points[27][0], list_points[27][1], list_points[30][0], list_points[30][1])
-        faceCloserCheck(list_points)
+        tilted_result = headCheck(list_points[27][0], list_points[27][1], list_points[30][0], list_points[30][1])
+        tilted_array += tilted_result
+        face_closer_result = faceCloserCheck(list_points)
+        face_closer_array += face_closer_result
         cv.imshow('result', img_frame)
 
         key = cv.waitKey(1)
@@ -243,5 +311,19 @@ while True:
             index = MOUTH_OUTLINE + MOUTH_INNER
         elif key == ord('6'):
             index = JAWLINE
+
+    if in_seat_check:
+        in_seat_array += '1'
+    else:
+        in_seat_array += '0'
+        tilted_array += '0'
+        face_closer_array += '0'
+
+    # 파이어베이스에 저장
+    dir.update({'in_seat': in_seat_array,
+                'tilted': tilted_array,
+                'face_closer': face_closer_array,
+                'sec': sec_array,
+                'gaze': gaze_array})
 
 cap.release()

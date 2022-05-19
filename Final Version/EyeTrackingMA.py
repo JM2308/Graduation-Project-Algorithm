@@ -1,5 +1,5 @@
 """
-DB에 학생 수 및 번호 정보 이용
+DB에 저장된 학생의 ID 이용해 식별
 """
 
 
@@ -8,7 +8,7 @@ def movingAverage():
     for i in range(1, studentNum + 1):
         global eyeTrackingResult
         # eyeTrackingResult = 가져온 값 저장
-        # 값 가져올 때는 학생 번호? 이용 (식별 가능한 정보 이용)
+        # 값 가져올 때는 학생의 ID 이용
         if eyeTrackingResult == 0:
             gazeResult[0] += 1
         elif eyeTrackingResult == 1:
