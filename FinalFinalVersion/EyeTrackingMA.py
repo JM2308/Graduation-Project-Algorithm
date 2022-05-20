@@ -1,48 +1,114 @@
 """
-DB에 학생 수 및 번호 정보 이용
+DB에 저장된 학생의 ID 이용해 식별
 """
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import db
 
 
-def movingAverage():
-    global studentNum
-    for i in range(1, studentNum + 1):
-        global eyeTrackingResult
-        # eyeTrackingResult = 가져온 값 저장
-        # 값 가져올 때는 학생 번호? 이용 (식별 가능한 정보 이용)
-        if eyeTrackingResult == 0:
-            gazeResult[0] += 1
-        elif eyeTrackingResult == 1:
-            gazeResult[1] += 1
-        elif eyeTrackingResult == 2:
-            gazeResult[2] += 1
-        elif eyeTrackingResult == 3:
-            gazeResult[3] += 1
+def resetUnderstandResult(studentArray):
+    global baseRef
 
-    return gazeResult.index(max(gazeResult))
+    for name in studentArray:
+        checkRef = baseRef + '/' + name
+        dir = db.reference(checkRef)
 
+        understandArray = str(ref.child(name).child('understand').get())
+        # print("understandArray = " + str(understandArray))
 
-def checkStudentEye(eyeResult):
-    global studentNum
-    for i in range(1, studentNum):
-        # 동공인식 MovingAverage 결과와 각 학생 결과 비교
-        # 전체 정보 한꺼번에 저장할 것인지
-        # 각 학생별로 저장할 것인지
-        # 아니면 둘다?
-        
-        eachStudentResult = 10 # 값 가져오기
-        # 전체 moving average 결과와 학생의 eye tracking 결과가
-        # 같으면 집중 O
-        # 다르면 집중 X
-        if eyeResult == eachStudentResult:
-            print("집중 O")
-        else :
-            print("집중 X")
+        understandArray = []
+
+        if understandArray != "None":
+            dir.update({'understand': understandArray})
+
+        # print("understandArray = " + str(understandArray))
+        dir.update({'understand': understandArray})
 
 
-studentNum = 10  # 이 자리에 학생 수 가져오기
-eyeTrackingResult = -1
-gazeResult = [0, 0, 0, 0]
-movingAverageResult = -1
+def movingAverage(studentArray):
+    global ref
 
-eyeResult = movingAverage()
-checkStudentEye(eyeResult)
+    # 전체 eyeTracking 측정 횟수 확인
+    totalCheckNum = len(ref.child(studentArray[0]).child('gaze').get())
+    print(totalCheckNum)
+
+    totalCheckNum = int(totalCheckNum)
+    for i in range(0, totalCheckNum):
+        totalGazeResult = [0, 0, 0, 0]
+        studentEyePerSec = []
+
+        for name in studentArray:
+            gaze = ref.child(name).child('gaze').get()
+            eyeTrackingResult = gaze[i]
+            # print("name = " + name + " gaze = " + eyeTrackingResult)
+
+            eachStudentList = [name, eyeTrackingResult]
+            studentEyePerSec.append(eachStudentList)
+
+            if eyeTrackingResult == "0":
+                totalGazeResult[0] += 1
+            elif eyeTrackingResult == "1":
+                totalGazeResult[1] += 1
+            elif eyeTrackingResult == "2":
+                totalGazeResult[2] += 1
+            elif eyeTrackingResult == "3":
+                totalGazeResult[3] += 1
+
+        understandGaze = str(totalGazeResult.index(max(totalGazeResult)))
+        compareStudentEye(understandGaze, studentEyePerSec)
+
+
+def compareStudentEye(understandGaze, studentEyePerSec):
+    for name, gazeResult in studentEyePerSec:
+        if understandGaze == gazeResult:
+            saveUnderstandResult("1", name)
+        else:
+            saveUnderstandResult("0", name)
+
+
+def saveUnderstandResult(understand, name):
+    global ref
+    global baseRef
+
+    saveRef = baseRef + '/' + name
+    dir = db.reference(saveRef)
+
+    understandArray = str(ref.child(name).child('understand').get())
+
+    if understandArray == "None":
+        understandArray = understand
+    else:
+        understandArray = str(ref.child(name).child('understand').get()) + understand
+
+    print("name = " + name + " | understandArray = " + understandArray)
+    dir.update({'understand': understandArray})
+
+
+# firebase
+cred = credentials.Certificate('Setting File/uume.json')
+firebase_admin.initialize_app(cred, {
+    'databaseURL': 'https://uume-58fe8-default-rtdb.firebaseio.com/'
+})
+
+# TeacherID-SubjectName 입력받기
+room_name = input(str('Enter room name(teacherID-class name): '))
+teacherID = room_name.split("-")[0]
+className = room_name.split("-")[1]
+
+date = input(str('Enter the Date(yyyymmdd): '))
+
+# DB 구조 : class_v2 -> teacher ID -> Date -> ClassName -> StudentID
+# 동적 입력 할당
+ref = db.reference().child('class_v2').child(teacherID).child(date).child(className)
+baseRef = 'class_v2/' + teacherID + '/' + date + '/' + className
+
+# 수동
+# ref = db.reference().child('class_v2').child('seojin915').child('20220519').child('scienceA')
+# baseRef = 'class_v2/seojin915/20220519/scienceA'
+
+studentArray = ref.child('students').get().split(".")
+studentArray.remove('')
+
+resetUnderstandResult(studentArray)
+
+movingAverage(studentArray)
