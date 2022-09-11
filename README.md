@@ -1,27 +1,2 @@
 # Graduation-Project-Algorithm
-<h3> 1. Frown Grabella : 미간을 찌푸리고 있는지 확인 </h3>
- - 방식 :  왼쪽 및 오른쪽 눈 안쪽 점과 코의 제일 위 점을 각각 이은 두 직선 사이 각도 계산<br>
- - 결과 :  측정된 각도가 임계값보다 작아지면 미간을 찌푸린 것으로 판단<br>
-
-<h3> 2. Tilted Head : 고개를 갸웃거리는지 확인 </h3>
- - 과정 01 : dlib의 코 제일 위의 점(27번)과 코 제일 밑의 점(30번)의 랜드마크 추출 <br>
- - 과정 02 : 추출한 랜드마크를 토대로 탄젠트 삼각비 함수인 arctan를 이용하여 각도 계산 <br>
- - 과정 03 : 가장 최근 10개 frame의 계산 결과를 평균내어 조건 확인 <br>
- - 조건 01 : angle ≥ threshold <br>
- - 조건 02-1 : newMovingAverage ≥ threshold <br>
- - 조건 02-2 : 각도가 급격하게 낮아지는 경우 (고개 갸웃 → 원래대로)를 예외 조건으로 추가 <br>
-              ( → preMovingAverage - (threshold / 10) ≤ newMovingAverage ) <br>
- - 조건 03-1 : QueueSize = 10 <br>
- - 조건 03-2 : 각도가 급격하게 커지는 경우 (기존 → 고개 갸웃)을 예외 조건으로 추가 <br>
-              ( → preMovingAverage + (threshold / 10) ≤ newMovingAverage ) <br>
-
-<h3> 3. Face Closer : 얼굴을 가까이했는지 확인 </h3>
- - 과정 01 : 정해진 초마다 한번씩 프레임을 캡쳐 <br>
- - 과정 02 : 캡쳐한 프레임에 나타나는 왼쪽 귀와 오른쪽 귀 사이의 거리를 계산 <br>
- - 과정 03 : 최근 프레임 10개를 기준으로 귀 사이 거리 평균을 구하고 이를 이용하여 귀 사이 거리 변화값이 기준값보다 크다면 얼굴을 가까이한 것으로 판단 <br>
-
-<h3> 4. Eye Tracking : 홍채의 움직임을 인식 </h3>
- - 과정 01 : 3초마다 1초씩 동공의 움직임 측정 <br>
- - 과정 02 : 1초 동안 저장한 데이터를 통해 가장 많이 측정된 방향 추출 <br>
- - 과정 03 : 추출한 결과를 DB에 저장 <br>
- - 과정 04 : 이후 모든 학생의 데이터 평균을 이용해 결과 확인 <br>
+2021-1 ~ 2022-1 Gachon Univ. Graduation Project "UUME" Recognition Algorithm
